@@ -39,7 +39,7 @@ export abstract class LRUMap<
     }
   }
 
-  public set(key: K, item: I): I[] {
+  public set(key: K, item: I): K[] {
     // Check if entry exists.
     const existingEntry = this.keymap.get(key);
     if (existingEntry) {
@@ -70,7 +70,7 @@ export abstract class LRUMap<
     return this.evict();
   }
 
-  protected shift(): I | null {
+  protected shift(): K | null {
     const entry = this.oldest;
 
     if (entry) {
@@ -91,7 +91,7 @@ export abstract class LRUMap<
 
       this._length--;
 
-      return entry.item;
+      return entry.key;
     }
 
     return null;
@@ -129,7 +129,7 @@ export abstract class LRUMap<
     this.newest = entry;
   }
 
-  protected abstract evict(): I[];
+  protected abstract evict(): K[];
 
   public [Symbol.iterator]() {
     return new EntryIterator(this.oldest);
