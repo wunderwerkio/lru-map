@@ -2,7 +2,7 @@
 
 This package provides a Map that implements the LRU (Least Recently Used) algorithm.
 
-Most of the implementation was inferred from [https://github.com/rsms/js-lru].
+Most of the implementation was inferred from [rsms/js-lru](https://github.com/rsms/js-lru).
 
 ## Design
 
