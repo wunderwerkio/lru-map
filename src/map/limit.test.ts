@@ -23,7 +23,7 @@ describe('Limit based LRU Map', () => {
       { value: 4 }
     ]);
 
-    map.set('five', { value: 5 });
+    expect(map.set('five', { value: 5 })).toEqual(['one']);
 
     expect(Array.from(map.values())).toEqual([
       { value: 2 },
@@ -34,7 +34,7 @@ describe('Limit based LRU Map', () => {
 
     // Make 'two' the most recently used entry.
     map.get('two');
-    map.set('six', { value: 6 });
+    expect(map.set('six', { value: 6 })).toEqual(['three']);
 
     expect(Array.from(map.values())).toEqual([
       { value: 4 },

@@ -29,7 +29,7 @@ describe('Size based LRU Map', () => {
     map.set('three', { value: 3, size: 300 });
     map.set('four', { value: 4, size: 400 });
 
-    map.set('five', { value: 5, size: 50 });
+    expect(map.set('five', { value: 5, size: 50 })).toEqual(['one', 'two']);
 
     expect(Array.from(map.values())).toEqual([
       { value: 3, size: 300 },
