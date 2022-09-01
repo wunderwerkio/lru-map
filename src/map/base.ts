@@ -39,14 +39,14 @@ export abstract class LRUMap<
     }
   }
 
-  public set(key: K, item: I) {
+  public set(key: K, item: I): I[] {
     // Check if entry exists.
     const existingEntry = this.keymap.get(key);
     if (existingEntry) {
       // Update existing entry.
       existingEntry.item = item;
 
-      return;
+      return [];
     }
 
     // Create new entry.
@@ -67,10 +67,10 @@ export abstract class LRUMap<
     this.newest = newEntry;
     this._length++;
 
-    this.evict();
+    return this.evict();
   }
 
-  protected shift(): boolean {
+  protected shift(): I | null {
     const entry = this.oldest;
 
     if (entry) {
@@ -91,10 +91,10 @@ export abstract class LRUMap<
 
       this._length--;
 
-      return true;
+      return entry.item;
     }
 
-    return false;
+    return null;
   }
 
   protected markEntryAsUsed(entry: LRUEntry<K, I>) {
@@ -129,7 +129,7 @@ export abstract class LRUMap<
     this.newest = entry;
   }
 
-  protected abstract evict(): void;
+  protected abstract evict(): I[];
 
   public [Symbol.iterator]() {
     return new EntryIterator(this.oldest);

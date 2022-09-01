@@ -18,9 +18,11 @@ export class LimitBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
     }
   }
 
-  protected evict() {
+  protected evict(): LRUItem<V>[] {
     if (this._length > this.limit) {
-      this.shift();
+      return [this.shift()];
     }
+
+    return [];
   }
 }

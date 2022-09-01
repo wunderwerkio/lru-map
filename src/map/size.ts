@@ -39,28 +39,32 @@ export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
     // Add the size of the newly added item to the total size.
     this._size = this._size + item.size;
 
-    super.set(key, item);
+    return super.set(key, item);
   }
 
-  protected evict(): void {
+  protected evict() {
+    const evicted = [];
+
     while (this._size > this.maxSize) {
-      this.shift();
+      evicted.push(this.shift());
     }
+
+    return evicted;
   }
 
-  protected shift(): boolean {
+  protected shift() {
     const entry = this.oldest;
     const sizeToSubtract = entry.item.size;
 
     // Remove oldest entry.
-    if (super.shift()) {
+    const removed = super.shift();
+
+    if (removed) {
       // If an entry was removed, we need to update the total size.
       this._size = this._size - sizeToSubtract;
-
-      return true;
     }
 
-    return false;
+    return removed;
   }
 
   public delete(key: K): boolean {
