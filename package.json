@@ -19,7 +19,7 @@
     "format:check": "prettier --check '{src,tests}/**/*.{ts,tsx}'",
     "format:write": "prettier --write '{src,tests}/**/*.{ts,tsx}'",
     "version-packages": "pnpm run '/(build|lint|test|typecheck)/' && changeset version && pnpm install --lockfile-only",
-    "publish-packages": "pnpm run test && turbo run export-version && turbo run build lint typecheck && changeset publish"
+    "publish-packages": "pnpm run '/(build|lint|test|typecheck)/' && changeset publish"
   },
   "author": {
     "name": "Christian Foidl",
