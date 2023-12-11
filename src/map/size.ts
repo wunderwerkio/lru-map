@@ -1,5 +1,5 @@
-import { SizedLRUItem, Value } from '../entry';
-import { Key, LRUMap } from './base';
+import { SizedLRUItem, Value } from '../entry/index.js';
+import { Key, LRUMap } from './base.js';
 
 export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
   K,

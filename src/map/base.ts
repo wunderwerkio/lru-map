@@ -1,5 +1,16 @@
-import { createEntry, LRUItem, LRUEntry, NEWER, OLDER, Value } from '../entry';
-import { EntryIterator, KeyIterator, ValueIterator } from '../iterator';
+import {
+  createEntry,
+  LRUItem,
+  LRUEntry,
+  NEWER,
+  OLDER,
+  Value
+} from '../entry/index.js';
+import {
+  EntryIterator,
+  KeyIterator,
+  ValueIterator
+} from '../iterator/index.js';
 
 export type Key = string | number;
 

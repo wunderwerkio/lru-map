@@ -1,0 +1,55 @@
+name: Lint & Test
+
+on:
+  push: 
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop --command bash {0}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Install nix
+        uses: nixbuild/nix-quick-install-action@v25
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: |
+          pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      - name: Check format
+        run: pnpm format:check
+

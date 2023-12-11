@@ -1,5 +1,5 @@
-import { LRUItem, Value } from '../entry';
-import { LRUMap, Key } from './base';
+import { LRUItem, Value } from '../entry/index.js';
+import { LRUMap, Key } from './base.js';
 
 export class LimitBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
   K,

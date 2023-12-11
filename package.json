@@ -2,53 +2,55 @@
   "name": "@wunderwerk/lru-map",
   "version": "0.1.2",
   "description": "Map based on Least Recently Used algorithm.",
+  "type": "module",
   "main": "dist/index.js",
-  "module": "dist/module.js",
-  "types": "dist/types.d.ts",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "dist/index.d.ts",
+      "import": "dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "rimraf dist && parcel build --no-source-maps",
+    "build": "rimraf dist && tsup src/index.ts --dts --format=esm",
     "lint": "eslint --ext .ts,.tsx src",
-    "lint:fix": "eslint --ext .ts,.tsx src --fix",
     "typecheck": "tsc --project ./tsconfig.json --noEmit",
-    "test": "jest"
+    "test": "NODE_NO_WARNINGS=1 ava",
+    "format:check": "prettier --check '{src,tests}/**/*.{ts,tsx}'",
+    "format:write": "prettier --write '{src,tests}/**/*.{ts,tsx}'"
   },
   "author": {
     "name": "Christian Foidl",
     "email": "christian@wunderwerk.io",
     "url": "https://wunderwerk.io/"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "devDependencies": {
-    "@parcel/core": "^2.7.0",
-    "@parcel/packager-ts": "^2.7.0",
-    "@parcel/transformer-typescript-types": "^2.7.0",
-    "@types/jest": "^29.0.0",
+    "@changesets/cli": "^2.27.1",
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
+    "ava": "^6.0.1",
     "eslint": "^8.23.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^3.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "jest": "^28",
-    "parcel": "^2.7.0",
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
-    "ts-jest": "^28.0.8",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.0.1",
     "typescript": "^4.8.2"
   },
-  "targets": {
-    "main": {
-      "source": "./src/index.ts"
+  "ava": {
+    "files": [
+      "tests/**/*.test.ts"
+    ],
+    "extensions": {
+      "ts": "module"
     },
-    "module": {
-      "source": "./src/index.ts"
-    },
-    "types": {
-      "source": "./src/index.ts"
-    }
-  },
-  "publishConfig": {
-    "registry": "https://npm.wunderwerk.dev"
+    "nodeArguments": [
+      "--loader",
+      "ts-node/esm"
+    ]
   }
 }

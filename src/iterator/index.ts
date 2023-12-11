@@ -1,4 +1,4 @@
-import { LRUEntry, NEWER } from '../entry';
+import { LRUEntry, NEWER } from '../entry/index.js';
 
 type LRUIteratorResult<R> = {
   done: boolean;
