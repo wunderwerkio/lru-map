@@ -1,5 +1,11 @@
 # @wunderwerk/lru-map
 
+## 0.2.1
+
+### Patch Changes
+
+- 8f89830: Fix exports definition paths
+
 ## 0.2.0
 
 ### Minor Changes
