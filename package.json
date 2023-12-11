@@ -54,5 +54,10 @@
       "--loader",
       "ts-node/esm"
     ]
-  }
+  },
+  "files": [
+    "README.md",
+    "LICENSE",
+    "dist/*"
+  ]
 }
