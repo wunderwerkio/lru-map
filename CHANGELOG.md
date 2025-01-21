@@ -1,5 +1,11 @@
 # @wunderwerk/lru-map
 
+## 0.2.2
+
+### Patch Changes
+
+- 39e5102: Upgrade dependencies
+
 ## 0.2.1
 
 ### Patch Changes
