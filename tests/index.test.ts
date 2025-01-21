@@ -1,5 +1,5 @@
 import { LimitBasedLRUMap } from '../src/map/limit.js';
-import test from 'ava';
+import { test, expect } from 'vitest';
 
 const createMap = () => {
   const map = new LimitBasedLRUMap<string, number>(Number.MAX_VALUE);
@@ -12,13 +12,13 @@ const createMap = () => {
   return map;
 };
 
-test('should get previously set value', (t) => {
+test('should get previously set value', () => {
   const map = createMap();
 
-  t.deepEqual(map.get('three'), { value: 3 });
+  expect(map.get('three')).toEqual({ value: 3 });
 });
 
-test('should return key iterator', (t) => {
+test('should return key iterator', () => {
   const map = createMap();
 
   const keys = [];
@@ -26,10 +26,10 @@ test('should return key iterator', (t) => {
     keys.push(key);
   }
 
-  t.deepEqual(keys, ['one', 'two', 'three', 'four']);
+  expect(keys).toEqual(['one', 'two', 'three', 'four']);
 });
 
-test('should return value iterator', (t) => {
+test('should return value iterator', () => {
   const map = createMap();
 
   const values = [];
@@ -37,10 +37,15 @@ test('should return value iterator', (t) => {
     values.push(value);
   }
 
-  t.deepEqual(values, [{ value: 1 }, { value: 2 }, { value: 3 }, { value: 4 }]);
+  expect(values).toEqual([
+    { value: 1 },
+    { value: 2 },
+    { value: 3 },
+    { value: 4 }
+  ]);
 });
 
-test('should be iteratable', (t) => {
+test('should be iteratable', () => {
   const map = createMap();
 
   const entries = [];
@@ -48,7 +53,7 @@ test('should be iteratable', (t) => {
     entries.push(entry);
   }
 
-  t.deepEqual(entries, [
+  expect(entries).toEqual([
     ['one', { value: 1 }],
     ['two', { value: 2 }],
     ['three', { value: 3 }],
@@ -56,7 +61,7 @@ test('should be iteratable', (t) => {
   ]);
 });
 
-test('should return entries iterator', (t) => {
+test('should return entries iterator', () => {
   const map = createMap();
 
   const entries = [];
@@ -64,7 +69,7 @@ test('should return entries iterator', (t) => {
     entries.push(entry);
   }
 
-  t.deepEqual(entries, [
+  expect(entries).toEqual([
     ['one', { value: 1 }],
     ['two', { value: 2 }],
     ['three', { value: 3 }],
@@ -72,70 +77,69 @@ test('should return entries iterator', (t) => {
   ]);
 });
 
-test('should find value by key', (t) => {
+test('should find value by key', () => {
   const map = createMap();
 
-  t.deepEqual(map.find('three'), { value: 3 });
-  t.is(map.find('invalid-key'), undefined);
+  expect(map.find('three')).toEqual({ value: 3 });
+  expect(map.find('invalid-key')).toBeUndefined();
 });
 
-test('should check if key exists', (t) => {
+test('should check if key exists', () => {
   const map = createMap();
 
-  t.truthy(map.has('three'));
-  t.falsy(map.has('invalid-key'));
+  expect(map.has('three')).toBeTruthy();
+  expect(map.has('invalid-key')).toBeFalsy();
 });
 
-test('should delete entry by key', (t) => {
+test('should delete entry by key', () => {
   const map = createMap();
 
-  t.deepEqual(Array.from(map.values()), [
+  expect(Array.from(map.values())).toEqual([
     { value: 1 },
     { value: 2 },
     { value: 3 },
     { value: 4 }
   ]);
 
-  t.truthy(map.has('three'));
-  t.truthy(map.delete('three'));
-  t.falsy(map.has('three'));
-  t.falsy(map.delete('three'));
+  expect(map.has('three')).toBeTruthy();
+  expect(map.delete('three')).toBeTruthy();
+  expect(map.has('three')).toBeFalsy();
+  expect(map.delete('three')).toBeFalsy();
 
-  t.deepEqual(Array.from(map.values()), [
+  expect(Array.from(map.values())).toEqual([
     { value: 1 },
     { value: 2 },
     { value: 4 }
   ]);
 });
 
-test('should clear map', (t) => {
+test('should clear map', () => {
   const map = createMap();
 
-  t.is(Array.from(map).length, 4);
+  expect(Array.from(map).length).toEqual(4);
   map.clear();
-  t.is(Array.from(map).length, 0);
+  expect(Array.from(map).length).toEqual(0);
 });
 
-test('should print list as string', (t) => {
+test('should print list as string', () => {
   const map = createMap();
 
   map.get('two');
 
-  t.is(map.toString(), 'one < three < four < two');
+  expect(map.toString()).toEqual('one < three < four < two');
 });
 
-test('should serialize', (t) => {
+test('should serialize', () => {
   const map = createMap();
 
   map.get('two');
 
-  t.is(
-    map.toJson(),
+  expect(map.toJson()).toEqual(
     '[["one",{"value":1}],["three",{"value":3}],["four",{"value":4}],["two",{"value":2}]]'
   );
 });
 
-test('should unserialize', (t) => {
+test('should unserialize', () => {
   const map = createMap();
 
   const data =
@@ -143,7 +147,7 @@ test('should unserialize', (t) => {
 
   map.assignFromJson(data);
 
-  t.deepEqual(Array.from(map.values()), [
+  expect(Array.from(map.values())).toEqual([
     { value: 1 },
     { value: 3 },
     { value: 4 },

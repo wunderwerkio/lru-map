@@ -15,7 +15,7 @@
     "build": "rimraf dist && tsup src/index.ts --dts --format=esm",
     "lint": "eslint --ext .ts,.tsx src",
     "typecheck": "tsc --project ./tsconfig.json --noEmit",
-    "test": "NODE_NO_WARNINGS=1 ava",
+    "test": "vitest",
     "format:check": "prettier --check '{src,tests}/**/*.{ts,tsx}'",
     "format:write": "prettier --write '{src,tests}/**/*.{ts,tsx}'",
     "version-packages": "pnpm run '/(build|lint|test|typecheck)/' && changeset version && pnpm install --lockfile-only",
@@ -31,7 +31,6 @@
     "@changesets/cli": "^2.27.1",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
-    "ava": "^6.0.1",
     "eslint": "^8.55.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -41,19 +40,8 @@
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.1",
-    "typescript": "^5.3.3"
-  },
-  "ava": {
-    "files": [
-      "tests/**/*.test.ts"
-    ],
-    "extensions": {
-      "ts": "module"
-    },
-    "nodeArguments": [
-      "--loader",
-      "ts-node/esm"
-    ]
+    "typescript": "^5.3.3",
+    "vitest": "^3.0.3"
   },
   "files": [
     "README.md",
