@@ -1,38 +1,29 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
-    ww-node-overlays.url = "github:wunderwerkio/nix-node-packages-overlays";
-    ww-utils.url = "github:wunderwerkio/nix-ww-utils";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+
+    utils.url = "github:wunderwerkio/nix-utils";
+    utils.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = {
     self,
     nixpkgs,
-    ww-node-overlays,
-    ww-utils,
-  }: {
-    devShells = ww-utils.lib.forEachWunderwerkSystem (
-      system: let
-        overlays = with ww-node-overlays.overlays; [
-          pnpm
-        ];
-        pkgs = import nixpkgs {
-          inherit system overlays;
-        };
-      in rec {
+    utils,
+  }: utils.lib.systems.eachDefault (system:
+    let
+      pkgs = import nixpkgs {
+        inherit system;
+      };
+    in {
+      devShells = rec {
         default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            nodejs_20
-
-            nodePackages.pnpm-latest
+          buildInputs = [
+            pkgs.nodejs_22
+            pkgs.pnpm_9
           ];
         };
-      }
-    );
-
-    formatter = ww-utils.lib.forEachWunderwerkSystem (
-      system:
-        nixpkgs.legacyPackages.${system}.alejandra
-    );
-  };
+      };
+    }
+  );
 }

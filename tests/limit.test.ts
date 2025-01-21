@@ -1,6 +1,6 @@
 import { LRUItem } from '../src/entry/index.js';
 import { LimitBasedLRUMap } from '../src/map/limit.js';
-import test from 'ava';
+import { test, expect } from 'vitest';
 
 const createMap = (limit: number) => {
   const map = new LimitBasedLRUMap<string, number>(limit);
@@ -13,19 +13,19 @@ const createMap = (limit: number) => {
   return map;
 };
 
-test('should remove least recently used entry if exceeding limit', (t) => {
+test('should remove least recently used entry if exceeding limit', () => {
   const map = createMap(4);
 
-  t.deepEqual(Array.from(map.values()), [
+  expect(Array.from(map.values())).toEqual([
     { value: 1 },
     { value: 2 },
     { value: 3 },
     { value: 4 }
   ]);
 
-  t.deepEqual(map.set('five', { value: 5 }), ['one']);
+  expect(map.set('five', { value: 5 })).toEqual(['one']);
 
-  t.deepEqual(Array.from(map.values()), [
+  expect(Array.from(map.values())).toEqual([
     { value: 2 },
     { value: 3 },
     { value: 4 },
@@ -34,9 +34,9 @@ test('should remove least recently used entry if exceeding limit', (t) => {
 
   // Make 'two' the most recently used entry.
   map.get('two');
-  t.deepEqual(map.set('six', { value: 6 }), ['three']);
+  expect(map.set('six', { value: 6 })).toEqual(['three']);
 
-  t.deepEqual(Array.from(map.values()), [
+  expect(Array.from(map.values())).toEqual([
     { value: 4 },
     { value: 5 },
     { value: 2 },
@@ -44,7 +44,7 @@ test('should remove least recently used entry if exceeding limit', (t) => {
   ]);
 });
 
-test('should construct with initial entries', (t) => {
+test('should construct with initial entries', () => {
   const entries: [string, LRUItem<number>][] = [
     ['one', { value: 1 }],
     ['two', { value: 2 }],
@@ -53,6 +53,6 @@ test('should construct with initial entries', (t) => {
   ];
   const map = new LimitBasedLRUMap<string, number>(2, entries);
 
-  t.is(map.length, 2);
-  t.deepEqual(Array.from(map.keys()), ['three', 'four']);
+  expect(map.length).toEqual(2);
+  expect(Array.from(map.keys())).toEqual(['three', 'four']);
 });

@@ -13,9 +13,9 @@
   },
   "scripts": {
     "build": "rimraf dist && tsup src/index.ts --dts --format=esm",
-    "lint": "eslint --ext .ts,.tsx src",
+    "lint": "eslint src",
     "typecheck": "tsc --project ./tsconfig.json --noEmit",
-    "test": "NODE_NO_WARNINGS=1 ava",
+    "test": "vitest",
     "format:check": "prettier --check '{src,tests}/**/*.{ts,tsx}'",
     "format:write": "prettier --write '{src,tests}/**/*.{ts,tsx}'",
     "version-packages": "pnpm run '/(build|lint|test|typecheck)/' && changeset version && pnpm install --lockfile-only",
@@ -28,32 +28,20 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@changesets/cli": "^2.27.1",
-    "@typescript-eslint/eslint-plugin": "^6.13.2",
-    "@typescript-eslint/parser": "^6.13.2",
-    "ava": "^6.0.1",
-    "eslint": "^8.55.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-prettier": "^5.0.1",
-    "prettier": "^3.1.1",
-    "rimraf": "^5.0.5",
+    "@changesets/cli": "^2.27.11",
+    "@typescript-eslint/eslint-plugin": "^8.21.0",
+    "@typescript-eslint/parser": "^8.21.0",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-import-resolver-typescript": "^3.7.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.3",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.3"
-  },
-  "ava": {
-    "files": [
-      "tests/**/*.test.ts"
-    ],
-    "extensions": {
-      "ts": "module"
-    },
-    "nodeArguments": [
-      "--loader",
-      "ts-node/esm"
-    ]
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.3"
   },
   "files": [
     "README.md",
