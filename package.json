@@ -1,6 +1,6 @@
 {
   "name": "@wunderwerk/lru-map",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Map based on Least Recently Used algorithm.",
   "type": "module",
   "main": "./dist/index.js",
