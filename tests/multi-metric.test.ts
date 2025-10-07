@@ -336,9 +336,10 @@ test('should auto-set timestamp if not provided', () => {
 
   const before = Date.now();
   map.set('one', { value: 1, size: 10, timestamp: 0 });
-  const after = Date.now();
 
   const item = map.get('one');
+  const after = Date.now();
+
   expect(item?.timestamp).toBeGreaterThanOrEqual(before);
   expect(item?.timestamp).toBeLessThanOrEqual(after);
 });
