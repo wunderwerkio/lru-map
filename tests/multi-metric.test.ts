@@ -17,7 +17,11 @@ test('should evict by limit (max number of items)', () => {
   expect(map.size).toEqual(30);
 
   // Adding fourth item should evict 'one'
-  const evicted = map.set('four', { value: 4, size: 10, timestamp: Date.now() });
+  const evicted = map.set('four', {
+    value: 4,
+    size: 10,
+    timestamp: Date.now()
+  });
 
   expect(evicted).toEqual(['one']);
   expect(map.length).toEqual(3);
@@ -40,7 +44,11 @@ test('should evict by size (max total size)', () => {
   expect(map.length).toEqual(3);
 
   // Adding item that exceeds size should evict 'one' and 'two'
-  const evicted = map.set('four', { value: 4, size: 50, timestamp: Date.now() });
+  const evicted = map.set('four', {
+    value: 4,
+    size: 50,
+    timestamp: Date.now()
+  });
 
   expect(evicted).toEqual(['one', 'two']);
   expect(map.size).toEqual(80);
@@ -274,9 +282,7 @@ test('should handle shift on empty map without crashing', () => {
     ttl: 60000
   });
 
-  expect(() =>
-    (map as unknown as { shift: () => void }).shift()
-  ).not.toThrow();
+  expect(() => (map as unknown as { shift: () => void }).shift()).not.toThrow();
   expect((map as unknown as { shift: () => void }).shift()).toBeNull();
 });
 
@@ -367,3 +373,71 @@ test('should handle complex multi-metric scenario', () => {
   expect(Array.from(map.keys())).toEqual(['recent1', 'recent2', 'new']);
 });
 
+test('should efficiently evict expired items with early exit optimization', () => {
+  const now = Date.now();
+
+  const map = new MultiMetricLRUMap<string, number>({
+    limit: 100,
+    maxSize: 10000,
+    ttl: 5000
+  });
+
+  // Add 10 expired items at the beginning (oldest)
+  for (let i = 0; i < 10; i++) {
+    map.set(`expired${i}`, {
+      value: i,
+      size: 10,
+      timestamp: now - 6000 - i * 100
+    });
+  }
+
+  // All expired items should be evicted immediately
+  expect(map.length).toEqual(0);
+
+  // Add 20 valid items
+  for (let i = 0; i < 20; i++) {
+    map.set(`valid${i}`, { value: i, size: 10, timestamp: now - i * 100 });
+  }
+
+  expect(map.length).toEqual(20);
+
+  // Cleanup should find no expired items (efficient early exit)
+  const evicted = map.cleanupExpired();
+  expect(evicted).toEqual([]);
+  expect(map.length).toEqual(20);
+});
+
+test('should handle large maps with 10k items efficiently', () => {
+  const now = Date.now();
+
+  const map = new MultiMetricLRUMap<string, number>({
+    limit: 20000,
+    maxSize: 1000000,
+    ttl: 5000
+  });
+
+  // Add 10,000 items where first 5,000 are expired, last 5,000 are valid
+  // This tests the early exit optimization at scale
+  for (let i = 0; i < 10000; i++) {
+    const timestamp = i < 5000 ? now - 6000 : now - 1000;
+    map.set(`item${i}`, { value: i, size: 10, timestamp });
+  }
+
+  // Only the last 5,000 valid items should remain (expired items evicted immediately)
+  expect(map.length).toEqual(5000);
+  expect(map.size).toEqual(50000);
+
+  // Cleanup should be very fast with early exit
+  // Without optimization: would scan all 5,000 items
+  // With optimization: checks first item, sees it's valid, exits immediately
+  const startTime = Date.now();
+  const evicted = map.cleanupExpired();
+  const duration = Date.now() - startTime;
+
+  expect(evicted).toEqual([]);
+  expect(map.length).toEqual(5000);
+
+  // Should complete very quickly (< 10ms even on slow devices)
+  // The early exit means we only check the first (oldest) item
+  expect(duration).toBeLessThan(10);
+});

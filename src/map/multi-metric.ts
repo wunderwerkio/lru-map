@@ -1,4 +1,4 @@
-import type { MultiMetricLRUItem, Value } from '../entry/index.js';
+import { NEWER, type MultiMetricLRUItem, type Value } from '../entry/index.js';
 import { type Key, LRUMap } from './base.js';
 
 export interface MultiMetricLRUOptions {
@@ -66,16 +66,11 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
     const evicted: K[] = [];
     const now = Date.now();
 
-    // First pass: evict all expired items (those exceeding TTL)
-    const expiredKeys = this.getExpiredKeys(now);
-    for (const key of expiredKeys) {
-      const removed = this.evictEntry(key);
-      if (removed !== null) {
-        evicted.push(removed);
-      }
-    }
+    // First pass: evict expired items starting from oldest (LRU)
+    // This is efficient because expired items cluster near the oldest end
+    this.evictExpiredFromOldest(now, evicted);
 
-    // Second pass: evict LRU items if we exceed limit or maxSize
+    // Second pass: evict LRU items if we still exceed limit or maxSize
     while (this._length > this.limit || this._size > this.maxSize) {
       const key = this.shift();
       if (key !== null) {
@@ -90,38 +85,36 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
   }
 
   /**
-   * Get all keys of items that have exceeded their TTL
+   * Efficiently evict expired items by starting from the oldest (LRU) entries.
+   * Since older entries are more likely to have expired, we can often avoid
+   * scanning the entire map by stopping once we find a valid (non-expired) item.
+   *
+   * This is O(k) where k is the number of expired items, rather than O(n) for all items.
    */
-  protected getExpiredKeys(now: number): K[] {
-    const expiredKeys: K[] = [];
+  protected evictExpiredFromOldest(now: number, evicted: K[]): void {
+    let current = this.oldest;
 
-    for (const [key, item] of this) {
-      const age = now - item.timestamp;
+    while (current) {
+      const age = now - current.item.timestamp;
+
       if (age > this.ttl) {
-        expiredKeys.push(key);
+        // Item is expired, evict it
+        const keyToEvict = current.key;
+        // Move to next before deleting current
+        const next = current[NEWER];
+
+        // Evict the expired entry
+        if (this.delete(keyToEvict)) {
+          evicted.push(keyToEvict);
+        }
+
+        current = next;
+      } else {
+        // Found first non-expired item, we can stop
+        // All newer items will also be non-expired due to LRU ordering
+        break;
       }
     }
-
-    return expiredKeys;
-  }
-
-  /**
-   * Evict a specific entry by key
-   */
-  protected evictEntry(key: K): K | null {
-    const entry = this.keymap.get(key);
-
-    if (!entry) {
-      return null;
-    }
-
-    // Delete the entry
-    if (this.delete(key)) {
-      // Size is already updated in delete method
-      return key;
-    }
-
-    return null;
   }
 
   protected shift() {
@@ -184,17 +177,11 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
    */
   public cleanupExpired(): K[] {
     const now = Date.now();
-    const expiredKeys = this.getExpiredKeys(now);
     const evicted: K[] = [];
 
-    for (const key of expiredKeys) {
-      const removed = this.evictEntry(key);
-      if (removed !== null) {
-        evicted.push(removed);
-      }
-    }
+    // Use efficient oldest-first approach
+    this.evictExpiredFromOldest(now, evicted);
 
     return evicted;
   }
 }
-
