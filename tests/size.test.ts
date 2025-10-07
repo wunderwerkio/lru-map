@@ -117,3 +117,120 @@ test('should unserialize', () => {
   ]);
   expect(map.size).toEqual(600);
 });
+
+test('should evict when updating existing entry with larger size', () => {
+  const map = new SizeBasedLRUMap(100);
+
+  map.set('one', { value: 1, size: 40 });
+  map.set('two', { value: 2, size: 30 });
+  map.set('three', { value: 3, size: 30 });
+
+  expect(map.size).toEqual(100);
+  expect(map.length).toEqual(3);
+
+  // Update 'three' with a much larger size
+  // This should trigger eviction of 'one' and 'two' to make room
+  const evicted = map.set('three', { value: 3, size: 80 });
+
+  expect(evicted).toEqual(['one', 'two']);
+  expect(map.size).toEqual(80);
+  expect(map.length).toEqual(1);
+  expect(Array.from(map.keys())).toEqual(['three']);
+});
+
+test('should evict when updating existing entry causes size to exceed limit', () => {
+  const map = new SizeBasedLRUMap(100);
+
+  map.set('one', { value: 1, size: 30 });
+  map.set('two', { value: 2, size: 30 });
+  map.set('three', { value: 3, size: 30 });
+
+  expect(map.size).toEqual(90);
+  expect(map.length).toEqual(3);
+
+  // Update 'three' to size 50, which brings total to 110
+  // Should evict 'one' to bring it back under 100
+  const evicted = map.set('three', { value: 3, size: 50 });
+
+  expect(evicted).toEqual(['one']);
+  expect(map.size).toEqual(80);
+  expect(map.length).toEqual(2);
+  expect(Array.from(map.keys())).toEqual(['two', 'three']);
+});
+
+test('should not evict when updating existing entry with smaller size', () => {
+  const map = new SizeBasedLRUMap(100);
+
+  map.set('one', { value: 1, size: 40 });
+  map.set('two', { value: 2, size: 30 });
+  map.set('three', { value: 3, size: 30 });
+
+  expect(map.size).toEqual(100);
+
+  // Update 'three' with a smaller size - no eviction needed
+  const evicted = map.set('three', { value: 3, size: 10 });
+
+  expect(evicted).toEqual([]);
+  expect(map.size).toEqual(80);
+  expect(map.length).toEqual(3);
+});
+
+test('should not evict when updating existing entry with same size', () => {
+  const map = new SizeBasedLRUMap(100);
+
+  map.set('one', { value: 1, size: 40 });
+  map.set('two', { value: 2, size: 30 });
+  map.set('three', { value: 3, size: 30 });
+
+  expect(map.size).toEqual(100);
+
+  // Update 'three' with same size - no eviction needed
+  const evicted = map.set('three', { value: 333, size: 30 });
+
+  expect(evicted).toEqual([]);
+  expect(map.size).toEqual(100);
+  expect(map.length).toEqual(3);
+  expect(map.get('three')).toEqual({ value: 333, size: 30 });
+});
+
+test('should handle shift on empty map without crashing', () => {
+  const map = new SizeBasedLRUMap(1024);
+
+  // Call shift on an empty map - should not crash
+  expect(() => (map as unknown as { shift: () => void }).shift()).not.toThrow();
+  expect((map as unknown as { shift: () => void }).shift()).toBeNull();
+});
+
+test('should handle eviction after clearing map', () => {
+  const map = new SizeBasedLRUMap(100);
+
+  map.set('one', { value: 1, size: 50 });
+  map.set('two', { value: 2, size: 50 });
+
+  // Clear the map
+  map.clear();
+
+  expect(map.size).toEqual(0);
+  expect(map.length).toEqual(0);
+
+  // Now try to add a new item - this should not crash
+  expect(() => map.set('three', { value: 3, size: 50 })).not.toThrow();
+  expect(map.size).toEqual(50);
+  expect(map.length).toEqual(1);
+});
+
+test('should not return null in evicted array', () => {
+  const map = new SizeBasedLRUMap(100);
+
+  map.set('one', { value: 1, size: 40 });
+  map.set('two', { value: 2, size: 30 });
+  map.set('three', { value: 3, size: 30 });
+
+  // Update 'three' with larger size to trigger eviction
+  const evicted = map.set('three', { value: 3, size: 80 });
+
+  // Check that no null values are in the evicted array
+  expect(evicted).not.toContain(null);
+  expect(evicted.every((key) => key !== null)).toBe(true);
+  expect(evicted).toEqual(['one', 'two']);
+});
