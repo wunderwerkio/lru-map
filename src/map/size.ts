@@ -54,6 +54,11 @@ export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
 
   protected shift() {
     const entry = this.oldest;
+
+    if (!entry) {
+      return null;
+    }
+
     const sizeToSubtract = entry.item.size;
 
     // Remove oldest entry.
