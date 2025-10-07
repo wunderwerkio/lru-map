@@ -11,6 +11,11 @@ export interface SizedLRUItem<V extends Value> extends LRUItem<V> {
   size: number;
 }
 
+export interface MultiMetricLRUItem<V extends Value> extends LRUItem<V> {
+  size: number;
+  timestamp: number;
+}
+
 export interface LRUEntry<K, V> {
   key: K;
   item: V;
