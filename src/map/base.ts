@@ -57,7 +57,9 @@ export abstract class LRUMap<
       // Update existing entry.
       existingEntry.item = item;
 
-      return [];
+      // Still call evict() because subclasses may need to evict
+      // based on other criteria (e.g., size changes in SizeBasedLRUMap)
+      return this.evict();
     }
 
     // Create new entry.
