@@ -1,4 +1,4 @@
-import { NEWER, type MultiMetricLRUItem, type Value } from '../entry/index.js';
+import { type MultiMetricLRUItem, NEWER, type Value } from '../entry/index.js';
 import { type Key, LRUMap } from './base.js';
 
 export interface MultiMetricLRUOptions {
