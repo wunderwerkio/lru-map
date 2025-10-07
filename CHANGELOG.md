@@ -1,5 +1,11 @@
 # @wunderwerk/lru-map
 
+## 0.5.0
+
+### Minor Changes
+
+- 3318b8e: Implement size and limit based map variant
+
 ## 0.4.0
 
 ### Minor Changes
