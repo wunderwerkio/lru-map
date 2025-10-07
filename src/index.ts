@@ -1,5 +1,6 @@
 export { LimitBasedLRUMap } from './map/limit.js';
 export { SizeBasedLRUMap } from './map/size.js';
+export { LimitAndSizeBasedLRUMap } from './map/limit-and-size.js';
 export {
   MultiMetricLRUMap,
   type MultiMetricLRUOptions
