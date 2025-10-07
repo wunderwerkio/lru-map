@@ -1,10 +1,10 @@
 import {
-  createEntry,
-  LRUItem,
-  LRUEntry,
+  type LRUEntry,
+  type LRUItem,
   NEWER,
   OLDER,
-  Value
+  type Value,
+  createEntry
 } from '../entry/index.js';
 import {
   EntryIterator,

@@ -1,6 +1,6 @@
-import { LRUItem } from '../src/entry/index.js';
+import { expect, test } from 'vitest';
+import type { LRUItem } from '../src/entry/index.js';
 import { LimitBasedLRUMap } from '../src/map/limit.js';
-import { test, expect } from 'vitest';
 
 const createMap = (limit: number) => {
   const map = new LimitBasedLRUMap<string, number>(limit);
