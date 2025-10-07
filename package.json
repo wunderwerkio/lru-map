@@ -40,5 +40,9 @@
     "README.md",
     "LICENSE",
     "dist/*"
-  ]
+  ],
+  "packageManager": "pnpm@10.5.2",
+  "volta": {
+    "node": "22.20.0"
+  }
 }
