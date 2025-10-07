@@ -1,5 +1,11 @@
 # @wunderwerk/lru-map
 
+## 0.4.0
+
+### Minor Changes
+
+- 8fa37cf: Make the evict method public
+
 ## 0.3.0
 
 ### Minor Changes
