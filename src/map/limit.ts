@@ -18,7 +18,7 @@ export class LimitBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
     }
   }
 
-  protected evict() {
+  public evict() {
     if (this._length > this.limit) {
       const evicted = this.shift();
       return evicted !== null ? [evicted] : [];

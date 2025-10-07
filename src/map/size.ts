@@ -42,7 +42,7 @@ export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
     return super.set(key, item);
   }
 
-  protected evict() {
+  public evict() {
     const evicted: K[] = [];
 
     while (this._size > this.maxSize) {

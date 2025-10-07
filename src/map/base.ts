@@ -142,7 +142,7 @@ export abstract class LRUMap<
     this.newest = entry;
   }
 
-  protected abstract evict(): K[];
+  public abstract evict(): K[];
 
   public [Symbol.iterator]() {
     return new EntryIterator(this.oldest);
