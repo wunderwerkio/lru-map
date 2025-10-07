@@ -90,6 +90,11 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
    * scanning the entire map by stopping once we find a valid (non-expired) item.
    *
    * This is O(k) where k is the number of expired items, rather than O(n) for all items.
+   *
+   * Optimized for lower-end devices by:
+   * - Avoiding redundant Map.get() calls in delete()
+   * - Updating size directly without additional lookups
+   * - Caching Date.now() (passed as parameter)
    */
   protected evictExpiredFromOldest(now: number, evicted: K[]): void {
     let current = this.oldest;
@@ -100,11 +105,15 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
       if (age > this.ttl) {
         // Item is expired, evict it
         const keyToEvict = current.key;
+        const sizeToSubtract = current.item.size;
+
         // Move to next before deleting current
         const next = current[NEWER];
 
-        // Evict the expired entry
-        if (this.delete(keyToEvict)) {
+        // Optimized delete: update size first, then call super.delete()
+        // This avoids the redundant Map.get() call in this.delete()
+        if (super.delete(keyToEvict)) {
+          this._size = this._size - sizeToSubtract;
           evicted.push(keyToEvict);
         }
 
@@ -164,7 +173,6 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
     const item = super.get(key);
 
     if (item) {
-      // Update timestamp when item is accessed
       item.timestamp = Date.now();
     }
 
