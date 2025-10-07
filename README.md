@@ -27,18 +27,25 @@ Most of the implementation was inferred from [rsms/js-lru](https://github.com/rs
 
 ## Flavors
 
-The LRU Map is currently implemented in two flavors:
+The LRU Map is currently implemented in multiple flavors:
 
 - **Limit based**
   A limit of the maximum number of entries the LRU map can hold defines
   the max number of valid entries.
   When a new entry is added to the map, the oldest entry is removed.
-- **Entry-Size based**
+- **Size based**
   Each entry must have a size associated with it (e.g. bytes) when adding them
   to the map.
   The map has a maximum size that must not be exceeded.
   When a new entry is added to the map, the oldest entry/entries are removed
-  until the new entries size fits into the map.
+  until the new entry fits into the map.
+- **Limit and Size based**
+  Combines both limit-based and size-based eviction policies.
+  The map enforces both a maximum number of entries AND a maximum total size.
+  Entries are evicted when either constraint is exceeded.
+- **Multi-metric**
+  Combines limit, size, and time-to-live (TTL) eviction policies.
+  Entries are evicted based on expiration, count limit, or total size.
 
 ## Examples
 
@@ -87,4 +94,36 @@ map.size;           // -> 100
 map.set('four', { value: 'value-four', size: 30 });
 
 map.toString();     // -> "three < four"
+```
+
+### Limit and Size based
+
+```typescript
+import { LimitAndSizeBasedLRUMap } from '@wunderwerk/lru-map';
+
+const map = new LimitAndSizeBasedLRUMap<string, string>(3, 100);
+
+map.set('one', { value: 'value-one', size: 30 });
+map.set('two', { value: 'value-two', size: 30 });
+map.set('three', { value: 'value-three', size: 30 });
+
+map.toString();     // -> "one < two < three"
+map.size;           // -> 90
+map.length;         // -> 3
+
+// By adding a new entry that exceeds the size limit,
+// multiple oldest entries are removed until both constraints are satisfied.
+map.set('four', { value: 'value-four', size: 60 });
+
+map.toString();     // -> "three < four"
+map.size;           // -> 90
+map.length;         // -> 2
+
+// Adding another entry that exceeds the count limit
+// will also trigger eviction.
+map.set('five', { value: 'value-five', size: 20 });
+map.set('six', { value: 'value-six', size: 20 });
+
+map.toString();     // -> "four < five < six"
+map.length;         // -> 3
 ```
