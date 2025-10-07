@@ -14,6 +14,10 @@ import {
 
 export type Key = string | number;
 
+/**
+ * Base class for LRU map implementations using a doubly-linked list.
+ * Maintains entries ordered from oldest (head) to newest (tail).
+ */
 export abstract class LRUMap<
   K extends Key,
   V extends Value,
@@ -24,10 +28,17 @@ export abstract class LRUMap<
   protected newest: LRUEntry<K, I> = undefined;
   protected keymap = new Map<K, LRUEntry<K, I>>();
 
+  /** Returns the number of entries in the map. */
   public get length() {
     return this._length;
   }
 
+  /**
+   * Retrieves an item by key and marks it as most recently used.
+   *
+   * @param key - The key to look up
+   * @returns The item or null if not found
+   */
   public get(key: K): I | null {
     const entry = this.keymap.get(key);
 
@@ -40,6 +51,11 @@ export abstract class LRUMap<
     return entry.item;
   }
 
+  /**
+   * Clears the map and populates it with the provided entries.
+   *
+   * @param entries - Array of [key, item] tuples to populate the map
+   */
   public assign(entries: [K, I][]) {
     if (this._length > 0) {
       this.clear();
@@ -50,6 +66,13 @@ export abstract class LRUMap<
     }
   }
 
+  /**
+   * Adds or updates an entry in the map. Triggers eviction if necessary.
+   *
+   * @param key - The key to set
+   * @param item - The item to store
+   * @returns Array of evicted keys
+   */
   public set(key: K, item: I): K[] {
     // Check if entry exists.
     const existingEntry = this.keymap.get(key);
@@ -142,34 +165,60 @@ export abstract class LRUMap<
     this.newest = entry;
   }
 
+  /**
+   * Removes entries based on implementation-specific criteria.
+   * @returns Array of evicted keys
+   */
   public abstract evict(): K[];
 
+  /** Returns an iterator over [key, item] tuples from oldest to newest. */
   public [Symbol.iterator]() {
     return new EntryIterator(this.oldest);
   }
 
+  /** Returns an iterator over keys from oldest to newest. */
   public keys() {
     return new KeyIterator(this.oldest);
   }
 
+  /** Returns an iterator over items from oldest to newest. */
   public values() {
     return new ValueIterator(this.oldest);
   }
 
+  /** Returns an iterator over [key, item] tuples from oldest to newest. */
   public entries() {
     return this[Symbol.iterator]();
   }
 
+  /**
+   * Finds an item by key without marking it as recently used.
+   *
+   * @param key - The key to look up
+   * @returns The item or undefined if not found
+   */
   public find(key: K) {
     const entry = this.keymap.get(key);
 
     return entry ? entry.item : undefined;
   }
 
+  /**
+   * Checks if a key exists in the map.
+   *
+   * @param key - The key to check
+   * @returns True if the key exists
+   */
   public has(key: K) {
     return this.keymap.has(key);
   }
 
+  /**
+   * Removes an entry from the map.
+   *
+   * @param key - The key to remove
+   * @returns True if the entry was removed, false if not found
+   */
   public delete(key: K) {
     const entry = this.keymap.get(key);
 
@@ -203,6 +252,7 @@ export abstract class LRUMap<
     return true;
   }
 
+  /** Removes all entries from the map. */
   public clear() {
     this.newest = undefined;
     this.oldest = undefined;
@@ -211,6 +261,11 @@ export abstract class LRUMap<
     this.keymap.clear();
   }
 
+  /**
+   * Returns a string representation of the map keys from oldest to newest.
+   *
+   * @returns String in format "key1 < key2 < key3"
+   */
   public toString() {
     let s = '';
 
@@ -221,6 +276,11 @@ export abstract class LRUMap<
     return s.substring(0, s.length - 3);
   }
 
+  /**
+   * Serializes the map to JSON.
+   *
+   * @returns JSON string of [key, item] tuples
+   */
   public toJson() {
     const data = [];
 
@@ -231,6 +291,11 @@ export abstract class LRUMap<
     return JSON.stringify(data);
   }
 
+  /**
+   * Populates the map from a JSON string.
+   *
+   * @param data - JSON string of [key, item] tuples
+   */
   public assignFromJson(data: string) {
     const entries = JSON.parse(data);
 

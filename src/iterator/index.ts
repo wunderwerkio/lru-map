@@ -5,6 +5,7 @@ type LRUIteratorResult<R> = {
   value: R | undefined;
 };
 
+/** Base iterator for traversing LRU entries from oldest to newest. */
 abstract class LRUIterator<K, V, R> {
   protected entry: LRUEntry<K, V>;
 
@@ -16,6 +17,7 @@ abstract class LRUIterator<K, V, R> {
     return this;
   }
 
+  /** Returns the next item in the iteration sequence. */
   public next(): LRUIteratorResult<R> {
     const entry = this.entry;
 
@@ -36,18 +38,21 @@ abstract class LRUIterator<K, V, R> {
   protected abstract buildValue(entry: LRUEntry<K, V>): R;
 }
 
+/** Iterator that returns [key, value] tuples. */
 export class EntryIterator<K, V> extends LRUIterator<K, V, [K, V]> {
   protected buildValue(entry: LRUEntry<K, V>): [K, V] {
     return [entry.key, entry.item];
   }
 }
 
+/** Iterator that returns only keys. */
 export class KeyIterator<K, V> extends LRUIterator<K, V, K> {
   protected buildValue(entry: LRUEntry<K, V>) {
     return entry.key;
   }
 }
 
+/** Iterator that returns only values. */
 export class ValueIterator<K, V> extends LRUIterator<K, V, V> {
   protected buildValue(entry: LRUEntry<K, V>) {
     return entry.item;

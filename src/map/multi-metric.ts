@@ -10,6 +10,10 @@ export interface MultiMetricLRUOptions {
   ttl: number;
 }
 
+/**
+ * LRU map with multi-metric eviction: limit, size, and time-to-live.
+ * Entries are evicted based on expiration (TTL), count limit, or total size.
+ */
 export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
   K,
   V,
@@ -20,6 +24,12 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
   protected readonly maxSize: number;
   protected readonly ttl: number;
 
+  /**
+   * Creates a new multi-metric LRU map.
+   *
+   * @param options - Configuration with limit, maxSize, and ttl
+   * @param entries - Optional initial entries
+   */
   constructor(
     options: MultiMetricLRUOptions,
     entries: [K, MultiMetricLRUItem<V>][] = []
@@ -35,10 +45,19 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
     }
   }
 
+  /** Returns the current total size of all items in the map. */
   public get size() {
     return this._size;
   }
 
+  /**
+   * Adds or updates an entry. Sets timestamp if not provided. Throws if item size exceeds maxSize.
+   *
+   * @param key - The key to set
+   * @param item - The item with size and optional timestamp
+   * @returns Array of evicted keys
+   * @throws Error if item.size exceeds maxSize
+   */
   public set(key: K, item: MultiMetricLRUItem<V>) {
     // Check if entry fits within max size.
     if (item.size > this.maxSize) {
@@ -62,6 +81,12 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
     return super.set(key, item);
   }
 
+  /**
+   * Removes entries based on TTL expiration, count limit, and size limit.
+   * Expired items are evicted first, then oldest entries until constraints are met.
+   *
+   * @returns Array of evicted keys
+   */
   public evict() {
     const evicted: K[] = [];
     const now = Date.now();
@@ -126,6 +151,7 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
     }
   }
 
+  /** Removes the oldest entry and updates the total size. */
   protected shift() {
     const entry = this.oldest;
 
@@ -146,6 +172,12 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
     return removed;
   }
 
+  /**
+   * Removes an entry and updates the total size.
+   *
+   * @param key - The key to remove
+   * @returns True if the entry was removed
+   */
   public delete(key: K): boolean {
     const entry = this.keymap.get(key);
     const sizeToSubtract = entry?.item.size;
@@ -163,12 +195,20 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
     return false;
   }
 
+  /** Removes all entries and resets the total size to zero. */
   public clear() {
     super.clear();
 
     this._size = 0;
   }
 
+  /**
+   * Retrieves an item by key, marks it as used, and updates its timestamp.
+   * Returns null if the item has expired.
+   *
+   * @param key - The key to look up
+   * @returns The item or null if not found or expired
+   */
   public get(key: K): MultiMetricLRUItem<V> | null {
     // Check if entry exists and hasn't expired before refreshing timestamp
     const entry = this.keymap.get(key);
@@ -196,8 +236,9 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
   }
 
   /**
-   * Clean up expired items without affecting size/limit constraints
-   * This is useful for proactive cleanup
+   * Proactively removes expired items without affecting size/limit constraints.
+   *
+   * @returns Array of evicted keys
    */
   public cleanupExpired(): K[] {
     const now = Date.now();

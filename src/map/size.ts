@@ -1,6 +1,10 @@
 import type { SizedLRUItem, Value } from '../entry/index.js';
 import { type Key, LRUMap } from './base.js';
 
+/**
+ * LRU map that evicts entries based on total size of all items.
+ * When maxSize is exceeded, oldest entries are removed until the new entry fits.
+ */
 export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
   K,
   V,
@@ -9,6 +13,12 @@ export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
   protected _size = 0;
   protected readonly maxSize: number;
 
+  /**
+   * Creates a new size-based LRU map.
+   *
+   * @param maxSize - Maximum total size of all items
+   * @param entries - Optional initial entries
+   */
   constructor(maxSize: number, entries: [K, SizedLRUItem<V>][] = []) {
     super();
 
@@ -19,10 +29,19 @@ export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
     }
   }
 
+  /** Returns the current total size of all items in the map. */
   public get size() {
     return this._size;
   }
 
+  /**
+   * Adds or updates an entry. Throws if item size exceeds maxSize.
+   *
+   * @param key - The key to set
+   * @param item - The item with size to store
+   * @returns Array of evicted keys
+   * @throws Error if item.size exceeds maxSize
+   */
   public set(key: K, item: SizedLRUItem<V>) {
     // Check if entry fits within max size.
     if (item.size > this.maxSize) {
@@ -42,6 +61,7 @@ export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
     return super.set(key, item);
   }
 
+  /** Removes oldest entries until total size is within maxSize. */
   public evict() {
     const evicted: K[] = [];
 
@@ -55,6 +75,7 @@ export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
     return evicted;
   }
 
+  /** Removes the oldest entry and updates the total size. */
   protected shift() {
     const entry = this.oldest;
 
@@ -75,6 +96,12 @@ export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
     return removed;
   }
 
+  /**
+   * Removes an entry and updates the total size.
+   *
+   * @param key - The key to remove
+   * @returns True if the entry was removed
+   */
   public delete(key: K): boolean {
     const entry = this.keymap.get(key);
     const sizeToSubtract = entry?.item.size;
@@ -90,6 +117,7 @@ export class SizeBasedLRUMap<K extends Key, V extends Value> extends LRUMap<
     return false;
   }
 
+  /** Removes all entries and resets the total size to zero. */
   public clear() {
     super.clear();
 
