@@ -62,7 +62,7 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
     return super.set(key, item);
   }
 
-  protected evict() {
+  public evict() {
     const evicted: K[] = [];
     const now = Date.now();
 
