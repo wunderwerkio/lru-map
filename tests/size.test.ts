@@ -1,6 +1,6 @@
-import { SizedLRUItem } from '../src/entry/index.js';
+import { expect, test } from 'vitest';
+import type { SizedLRUItem } from '../src/entry/index.js';
 import { SizeBasedLRUMap } from '../src/map/size.js';
-import { test, expect } from 'vitest';
 
 test('should accept items up until maxSize is reached', () => {
   const map = new SizeBasedLRUMap(1024);

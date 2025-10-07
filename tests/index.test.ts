@@ -1,5 +1,5 @@
+import { expect, test } from 'vitest';
 import { LimitBasedLRUMap } from '../src/map/limit.js';
-import { test, expect } from 'vitest';
 
 const createMap = () => {
   const map = new LimitBasedLRUMap<string, number>(Number.MAX_VALUE);

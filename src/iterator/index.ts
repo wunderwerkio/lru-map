@@ -1,4 +1,4 @@
-import { LRUEntry, NEWER } from '../entry/index.js';
+import { type LRUEntry, NEWER } from '../entry/index.js';
 
 type LRUIteratorResult<R> = {
   done: boolean;
@@ -26,12 +26,11 @@ abstract class LRUIterator<K, V, R> {
         done: false,
         value: this.buildValue(entry)
       };
-    } else {
-      return {
-        done: true,
-        value: undefined
-      };
     }
+    return {
+      done: true,
+      value: undefined
+    };
   }
 
   protected abstract buildValue(entry: LRUEntry<K, V>): R;
