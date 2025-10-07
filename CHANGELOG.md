@@ -1,5 +1,15 @@
 # @wunderwerk/lru-map
 
+## 0.3.0
+
+### Minor Changes
+
+- fd3e44c: Implement multi metric map
+
+### Patch Changes
+
+- 64889bf: Fix bugs in map implementation
+
 ## 0.2.2
 
 ### Patch Changes
