@@ -170,10 +170,26 @@ export class MultiMetricLRUMap<K extends Key, V extends Value> extends LRUMap<
   }
 
   public get(key: K): MultiMetricLRUItem<V> | null {
+    // Check if entry exists and hasn't expired before refreshing timestamp
+    const entry = this.keymap.get(key);
+    if (!entry) {
+      return null;
+    }
+
+    const now = Date.now();
+    const age = now - entry.item.timestamp;
+
+    // If item has expired, return null.
+    // Item is then evicted by the eviction process.
+    if (age > this.ttl) {
+      return null;
+    }
+
+    // Item is valid, call super.get to move it to newest position
     const item = super.get(key);
 
     if (item) {
-      item.timestamp = Date.now();
+      item.timestamp = now;
     }
 
     return item;

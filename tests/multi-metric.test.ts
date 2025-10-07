@@ -441,3 +441,91 @@ test('should handle large maps with 10k items efficiently', () => {
   // The early exit means we only check the first (oldest) item
   expect(duration).toBeLessThan(10);
 });
+
+test('should not return expired item on get() - regression test', () => {
+  // Mock Date.now() to control time precisely
+  vi.useFakeTimers();
+  const initialTime = Date.now();
+  vi.setSystemTime(initialTime);
+
+  const map = new MultiMetricLRUMap<string, number>({
+    limit: 10,
+    maxSize: 1000,
+    ttl: 5 // 5ms TTL
+  });
+
+  // Insert an entry
+  map.set('key', { value: 42, size: 10, timestamp: initialTime });
+
+  // Verify it exists and has the correct value
+  let item = map.get('key');
+  expect(item?.value).toEqual(42);
+  expect(map.has('key')).toBe(true);
+
+  // Advance time by 6ms (past the 5ms TTL)
+  vi.setSystemTime(initialTime + 6);
+
+  // Try to get the item - should return null because it expired
+  item = map.get('key');
+  expect(item).toBeNull();
+
+  // Item is still in the map.
+  expect(map.has('key')).toBe(true);
+  expect(map.length).toEqual(1);
+  expect(map.size).toEqual(10);
+
+  // Run eviction.
+  map.cleanupExpired();
+  expect(map.has('key')).toBe(false);
+  expect(map.length).toEqual(0);
+  expect(map.size).toEqual(0);
+
+  vi.useRealTimers();
+});
+
+test('should refresh timestamp on get() only if item has not expired', () => {
+  vi.useFakeTimers();
+  const initialTime = Date.now();
+  vi.setSystemTime(initialTime);
+
+  const map = new MultiMetricLRUMap<string, number>({
+    limit: 10,
+    maxSize: 1000,
+    ttl: 10 // 10ms TTL
+  });
+
+  // Insert an entry
+  map.set('key', { value: 100, size: 10, timestamp: initialTime });
+
+  // Advance time by 5ms (within TTL)
+  vi.setSystemTime(initialTime + 5);
+
+  // Get the item - should return value and refresh timestamp
+  let item = map.get('key');
+  expect(item?.value).toEqual(100);
+  expect(item?.timestamp).toEqual(initialTime + 5);
+
+  // Advance time by another 8ms (total 13ms from initial, but only 8ms from last access)
+  vi.setSystemTime(initialTime + 13);
+
+  // Item should still be valid because timestamp was refreshed at +5ms
+  // and TTL is 10ms, so it expires at +15ms
+  item = map.get('key');
+  expect(item?.value).toEqual(100);
+  expect(item?.timestamp).toEqual(initialTime + 13);
+
+  // Advance time by 11ms more (total 24ms from initial, 11ms from last access)
+  vi.setSystemTime(initialTime + 24);
+
+  // Now the item should be expired (11ms > 10ms TTL)
+  item = map.get('key');
+  expect(item).toBeNull();
+
+  // Item still exists.
+  expect(map.has('key')).toBe(true);
+  // Run eviction.
+  map.cleanupExpired();
+  expect(map.has('key')).toBe(false);
+
+  vi.useRealTimers();
+});
